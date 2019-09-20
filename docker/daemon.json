@@ -1,0 +1,2 @@
+{ "insecure-registries":["devcvs-srv01.auto.local:5000", "devcvs-srv01:5000"] }
+

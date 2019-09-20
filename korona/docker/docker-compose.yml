@@ -1,0 +1,92 @@
+version: '3.6'
+
+services:
+  portainer:
+    image: portainer/portainer
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    container_name: portainer-prod
+
+  redis:
+    restart: always
+    image: redis:4.0
+    container_name: redis-prod
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 6479:6379
+
+  elasticsearch:
+    restart: always
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.2
+    container_name: elastic-prod
+    command: elasticsearch -Enetwork.host=_eth0:ipv4_ -Ediscovery.zen.ping.unicast.hosts=tasks.elasticsearch -Ehttp.host=0.0.0.0 -Ehttp.port=9200-9250 -Etransport.host=0.0.0.0 -Etransport.tcp.port=9300-9350 -Ecluster.name=korona-auto
+    environment:
+      - "bootstrap.memory_lock=true"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - es-conf:/usr/share/elasticsearch/config
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+  elasticsearch_logs:
+    restart: always
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.2
+    container_name: elastic-logs-prod
+    command: elasticsearch -Enetwork.host=_eth0:ipv4_ -Ediscovery.zen.ping.unicast.hosts=tasks.elasticsearch -Ehttp.host=0.0.0.0 -Ehttp.port=9200-9250 -Etransport.host=0.0.0.0 -Etransport.tcp.port=9300-9350 -Ecluster.name=korona-auto
+    environment:
+      - "bootstrap.memory_lock=true"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    volumes:
+      - es-data-logs:/usr/share/elasticsearch/data
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 10200:9200
+      - 10300:9300
+
+  influxdb:
+    restart: always
+    image: influxdb:1.6
+    container_name: influxdb-prod
+    hostname: influxdb
+    environment:
+      - INFLUXDB_ADMIN_USER=korona
+      - INFLUXDB_ADMIN_PASSWORD=nTgDLw0ZR4
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8086:8086
+
+  rabbitmq:
+    restart: always
+    image: rabbitmq:3.7-management
+    container_name: rabbitmq-prod
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  mongodb:
+    restart: always
+    image: mongo:3.4-jessie
+    container_name: mongodb-prod
+    volumes:
+      - mongodb-data:/data/db
+    ports:
+      - 27017:27017
+
+volumes:
+  es-data:
+    driver: local
+  es-conf:
+    driver: local
+  es-data-logs:
+    driver: local
+  mongodb-data:
+    driver: local

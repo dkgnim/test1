@@ -1,0 +1,2 @@
+deb http://repo.zabbix.com/zabbix/3.4/debian stretch main
+deb-src http://repo.zabbix.com/zabbix/3.4/debian stretch main
